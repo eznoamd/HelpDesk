@@ -25,13 +25,13 @@ Fluxo principal:
 
 ```mermaid
 flowchart TD
-    A[main.c: menu()] --> B[construir_interfaces()]
-    B --> C[empilhar_interface(inicio)]
-    C --> D{Loop}
-    D --> E[system("cls")]
-    E --> F[interface_atual()]
-    F --> G[menu_box(interface)]
-    G --> H[handle_controls()]
+    A["main.c: menu()"] --> B["construir_interfaces()"]
+    B --> C["empilhar_interface(inicio)"]
+    C --> D{"Loop"}
+    D --> E["system('cls')"]
+    E --> F["interface_atual()"]
+    F --> G["menu_box(interface)"]
+    G --> H["handle_controls()"]
     H --> D
 ```
 
