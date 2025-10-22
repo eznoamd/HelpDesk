@@ -25,7 +25,7 @@ Fluxo principal:
 
 ```mermaid
 flowchart TD
-    A[main.c -> menu()] --> B[construir_interfaces()]
+    A[main.c: menu()] --> B[construir_interfaces()]
     B --> C[empilhar_interface(inicio)]
     C --> D{Loop}
     D --> E[system("cls")]
@@ -127,15 +127,15 @@ HelpDesk/
 ### Diagrama de Relações (alto nível)
 ```mermaid
 graph LR
-  main[main.c] --> L[view/lopping.c: menu()]
-  L --> M[view/menu.c: construir_interfaces()]
-  L --> I[view/interface.c: pilha de telas]
-  L --> W[view/widgets.c: render]
-  L --> CH[controls/controls_holder.c: handle_controls()]
-  CH --> T[controls/teclas.c: interpretar_tecla()]
+  main[main.c] --> L[view/lopping.c menu]
+  L --> M[view/menu.c construir_interfaces]
+  L --> I[view/interface.c pilha de telas]
+  L --> W[view/widgets.c render]
+  L --> CH[controls/controls_holder.c handle_controls]
+  CH --> T[controls/teclas.c interpretar_tecla]
   CH --> I
   CH --> M
-  CH --> LG[core/login.c: login()]
+  CH --> LG[core/login.c login]
   LG --> D[data/usuarios.txt]
 ```
 
