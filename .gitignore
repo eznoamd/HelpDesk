@@ -1,0 +1,59 @@
+# --- CMake build directories ---
+/build/
+/build-*/
+/cmake-build-debug/
+/cmake-build-release/
+/cmake-build-*/
+
+# --- CMake generated files ---
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+install_manifest.txt
+Testing/
+compile_commands.json
+
+# --- Compiled binaries / objects ---
+*.o
+*.obj
+*.lo
+*.la
+*.a
+*.lib
+*.dll
+*.so
+*.dylib
+*.exe
+*.out
+*.app
+*.pdb
+*.ilk
+*.exp
+
+# --- Coverage / profiling ---
+*.gcda
+*.gcno
+*.gcov
+*.profraw
+*.profdata
+
+# --- IDE / Editors ---
+.idea/
+.vscode/
+*.code-workspace
+
+# --- OS / Editor temp files ---
+.DS_Store
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.swp
+*.swo
+*~
+
+# --- Logs ---
+*.log
+
+# --- CLion run configs (optional keep) ---
+# .run/
