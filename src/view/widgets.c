@@ -14,6 +14,7 @@ void print_opcoes(Interface *interface, int selecionada);
 static void print_login_linha(const char *label, const char *valor, int selecionado, int is_password);
 
 void menu_box(Interface *interface) {
+    printf("\n\n");
     const char *usuario = (get_logged() ? usuario_logado : "Anonimo");
 
     print_usuario_com_data(usuario);
@@ -23,7 +24,7 @@ void menu_box(Interface *interface) {
     printf("\033[38;5;220m ||  .::   .: .,::::::   :::  ::::::::::.:::::::-.  .,:::::: .::::::.  :::  ..   || \033[0m\n");
     printf("\033[38;5;214m ||  ;;;   ;;,;;;;''''   ;;;   `;;;```.;;;;;,   `';,;;;;'''';;;`    `  ;;; .;;,. || \033[0m\n");
     printf("\033[38;5;208m || ,[[[,,,[[[ [[cccc    [[[    `]]nnn]]' `[[     [[ [[cccc '[==/[[[[, [[[[[/'   || \033[0m\n");
-    printf("\033[38;5;202m || \"$$$\"\"\"$$$ $$\"\"\"    $$'     $$$\"\"     $$,    $$ $$\"\"\"\"   '''    $_$$$$,     || \033[0m\n");
+    printf("\033[38;5;202m || \"$$$\"\"\"$$$ $$\"\"\"    $$'     $$$\"\"     $$,    $$ $$\"\"\"\"   '''    $_$$$$,      || \033[0m\n");
     printf("\033[38;5;196m ||  888   \"88o888oo,__ o88oo,.__888o      888_,o8P' 888oo,__88b    dP\"888\"88o,  || \033[0m\n");
     printf("\033[38;5;160m ||  MMM    YMM\"\"\"\"YUMMM\"\"\"\"YUMMMYMMMb     MMMMP\"`   \"\"\"\"YUMMM\"YMmMY\"  MMM \"MMP\" || \033[0m\n");
     printf("\033[38;5;124m ||                                                                              || \033[0m\n");
@@ -43,6 +44,8 @@ void menu_box(Interface *interface) {
             break;
         case SELECAO:
             print_opcoes(interface, opcao_selecionada);
+            break;
+        case LISTA:
             break;
     }
 
@@ -153,3 +156,5 @@ void print_opcoes(Interface * interface, int selecionada) {
         opcao = opcao->proxima_opcao;
     }
 }
+
+//void print_lista()

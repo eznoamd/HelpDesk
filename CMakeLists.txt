@@ -20,4 +20,10 @@ add_executable(HelpDesk main.c
         src/controls/controls_holder.c
         src/view/acoes.c
         src/view/acoes.h
+        src/core/fila_normal.c
+        src/core/fila_normal.h
+        src/core/fila_preferencial.c
+        src/core/fila_preferencial.h
+        src/core/atendimento.c
+        src/core/atendimento.h
 )
