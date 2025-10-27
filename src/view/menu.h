@@ -4,10 +4,8 @@
 typedef struct Interface Interface;
 
 void construir_interfaces();
-void abrir_menu_cliente();
-void abrir_menu_atendente();
-void entrar_menu_atendente();
-void voltar_inicio();
+void abrir_menu_principal();
+void abrir_login();
 void sair_sistema();
 
 Interface *obter_inicio();

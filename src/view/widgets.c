@@ -38,7 +38,7 @@ void menu_box(Interface *interface) {
 
 
     switch(interface->tipo) {
-        case FORMULARIO:
+        case LOGIN:
             print_login_linha("Usuario:", user, opcao_selecionada == 1, 0);
             print_login_linha("Senha:  ", pass, opcao_selecionada == 2, 1);
             break;
@@ -156,5 +156,3 @@ void print_opcoes(Interface * interface, int selecionada) {
         opcao = opcao->proxima_opcao;
     }
 }
-
-//void print_lista()

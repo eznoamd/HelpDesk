@@ -35,7 +35,7 @@ flowchart TD
     H --> D
 ```
 
-- O loop de `menu()` (em `src/view/lopping.c`) redesenha a tela e processa entradas continuamente.
+- O loop de `menu()` (em `src/view/looping.c`) redesenha a tela e processa entradas continuamente.
 - A pilha de interfaces permite navegar para frente/voltar entre telas (`src/view/interface.*`).
 - A renderização usa funções de widgets (`src/view/widgets.c`).
 - As teclas são lidas/interpretadas em `src/controls/teclas.c` e processadas em `src/controls/controls_holder.c`.
@@ -48,6 +48,12 @@ HelpDesk/
 ├─ main.c
 └─ src/
    ├─ core/
+   │  ├─ atendimento.c
+   │  ├─ atendimento.h
+   │  ├─ fila_normal.c
+   │  ├─ fila_normal.h
+   │  ├─ fila_preferencial.c
+   │  ├─ fila_preferencial.h
    │  ├─ login.c
    │  └─ login.h
    ├─ controls/
@@ -62,7 +68,7 @@ HelpDesk/
       ├─ acoes.h
       ├─ interface.c
       ├─ interface.h
-      ├─ lopping.c
+      ├─ looping.c
       ├─ looping.h
       ├─ menu.c
       ├─ menu.h
@@ -73,30 +79,33 @@ HelpDesk/
 ## Módulos e Comunicação
 
 - **`main.c`**
-  - Ponto de entrada. Chama `menu()` definido em `src/view/lopping.c`.
+  - Ponto de entrada. Chama `menu()` definido em `src/view/looping.c`.
 
-- **`src/view/lopping.c`**
+- **`src/view/looping.c`**
   - Define o loop principal `menu()`.
   - Estados globais da UI: `opcao_selecionada`, `ultima_tecla`, `user`, `pass` (exportados via `looping.h` e `controls_holder.h`).
   - Constrói interfaces via `construir_interfaces()` e empilha a tela inicial `obter_inicio()`.
   - Loop: limpa a tela, obtém `interface_atual()`, chama `menu_box()` para renderizar e `handle_controls()` para processar entrada.
 
 - **`src/view/interface.*`**
-  - Estruturas: `Interface`, `Opcao`, `TipoMenu` (`FORMULARIO`, `SELECAO`).
+  - Estruturas: `Interface`, `Opcao`, `TipoMenu` (`LOGIN`, `SELECAO`, `LISTA`).
   - Gerencia a pilha de interfaces (`empilhar_interface`, `desempilhar_interface`, `interface_atual`, `voltar`).
   - Criação de UI em tempo de execução (`criar_interface`, `criar_opcao`).
 
 - **`src/view/menu.*`**
   - Constrói as telas e encadeia suas opções.
     - `inicio`: seleção entre Cliente/Atendente/Sair.
-    - `menu_cliente`: opções de cliente (iniciar atendimento, ver atendimentos, voltar).
-    - `login_atendente`: formulário com campos `Usuario` e `Senha`.
-  - Ações (callbacks) são funções como `abrir_menu_cliente`, `abrir_menu_atendente`, `voltar_inicio`, `sair_sistema`.
+    - `menu_cliente`: opções atuais — "Iniciar Atendimento", "Atender pedidos" (requer adm=1), "Ver meus atendimentos", "Sair".
+    - `form_login`: formulário com campos `Usuario` e `Senha`.
+  - Ações (callbacks) expostas/úteis: `abrir_menu_principal`, `abrir_login`, `voltar_inicio`, `sair_sistema`.
   - Exposta função `obter_inicio()` para o loop.
 
 - **`src/view/widgets.*`**
   - Renderiza a UI (ASCII/cores) e as opções, incluindo cabeçalhos e caixas.
   - `menu_box(Interface*)` decide como desenhar a interface conforme `TipoMenu`.
+    - `LOGIN`: duas linhas para `Usuario` e `Senha` (senha mascarada com `*`).
+    - `SELECAO`: lista de opções com destaque na selecionada.
+    - `LISTA`: reservado para futuras listas; sem renderização específica no momento.
   - Exibe usuário logado e data via `print_usuario_com_data()`.
 
 - **`src/controls/teclas.*`**
@@ -107,15 +116,27 @@ HelpDesk/
 - **`src/controls/controls_holder.*`**
   - Função central `handle_controls()` executa a ação conforme a tecla interpretada:
     - Navegação entre opções (`opcao_selecionada`).
-    - Voltar/Sair (`voltar()`, `exit(0)`).
-    - No formulário de login, insere/backspace em `user`/`pass` e confirma com `SETA_DIR`.
-    - Ao confirmar, chama `login(user, pass)` e, em caso de sucesso, volta para a tela anterior e limpa os campos.
-    - Em menus de seleção, localiza a `Opcao` com o índice selecionado e chama o callback `f()`.
+    - Voltar/Sair: `SETA_ESQ` chama `voltar()`; `ESC`/`'q'` sai, exceto em `LOGIN`, onde volta e limpa os campos.
+    - No formulário de login: digitação em `user`/`pass`, backspace, e confirmação com `SETA_DIR`.
+    - Ao confirmar (`SETA_DIR`) em `LOGIN`: se `login(user, pass)` for bem-sucedido, abre o menu principal do cliente (`abrir_menu_principal()`), limpa `user`/`pass` e reseta seleção; em falha, limpa apenas `pass`.
+    - Em menus de seleção (`SELECAO`), ao confirmar, busca a `Opcao` selecionada e chama o callback `f()`.
+    - Teclas numéricas (`0-9`): atualmente disparam a ação da opção selecionada (não selecionam por número).
 
 - **`src/core/login.*`**
   - Lê `../src/data/usuarios.txt` com pares `usuario senha`.
   - Valida credenciais e define `usuario_logado` global.
   - `get_logged()` indica se há usuário autenticado.
+  
+- **`src/core/atendimento.*`**
+  - Define o tipo `Atendimento` (descrição, prioridade 1-4, nome da pessoa, `struct tm data_hora`).
+  - Função `atendimento_create()` para construir instâncias válidas.
+
+- **`src/core/fila_preferencial.*`**
+  - Implementa `FilaPrioridadeMaxima` (heap máximo) de `Atendimento` por prioridade e data/hora.
+  - Operações: `criar_fila_prioridade_maxima`, `inserir`, `extrair_maximo`, `liberar_fila`.
+
+- **`src/core/fila_normal.*`**
+  - Arquivos presentes (estrutura reservada para fila FIFO). Implementação ainda vazia.
 
 - **`src/data/usuarios.txt`**
   - Formato simples por linha: `Usuario Senha` (separados por espaço). Exemplo:
@@ -127,7 +148,7 @@ HelpDesk/
 ### Diagrama de Relações (alto nível)
 ```mermaid
 graph LR
-  main[main.c] --> L[view/lopping.c menu]
+  main[main.c] --> L[view/looping.c menu]
   L --> M[view/menu.c construir_interfaces]
   L --> I[view/interface.c pilha de telas]
   L --> W[view/widgets.c render]
@@ -159,18 +180,20 @@ No Windows com MSVC/MinGW, o executável pode estar em `build/Release/HelpDesk.e
 
 ## Controles do Teclado
 - **[Seta Cima] / [Seta Baixo]**: navega entre opções.
-- **[Seta Direita]**: confirma a opção; no formulário, tenta login.
-- **[Seta Esquerda]**: volta (ou retorna ao início se não for formulário).
-- **[ESC] / 'q'**: sai (ou volta se estiver em formulário).
+- **[Seta Direita / Enter]**: confirma a opção; no formulário, tenta login.
+- **[Seta Esquerda]**: volta para a tela anterior.
+- **[ESC] / 'q'**: sai; em formulário de login, volta e limpa campos.
 - **[Backspace]**: apaga último caractere (nos campos do formulário).
 - **Caracteres imprimíveis**: digitam nos campos `Usuario` e `Senha` quando selecionados.
+- **[0-9]**: atualmente executa a opção selecionada (não seleciona por número).
 
 ## Interface de Usuário (Widgets)
 - UI usa sequências ANSI de cores (pode exigir um console compatível).
 - `menu_box()` desenha:
   - Cabeçalho com título e instruções.
-  - Se `TipoMenu = FORMULARIO`: duas linhas para `Usuario` e `Senha` (senha exibida com `*`).
-  - Se `TipoMenu = SELECAO`: lista de opções numeradas com destaque na selecionada.
+  - Se `TipoMenu = LOGIN`: duas linhas para `Usuario` e `Senha` (senha exibida com `*`).
+  - Se `TipoMenu = SELECAO`: lista de opções com destaque na selecionada.
+  - Se `TipoMenu = LISTA`: reservado para uso futuro.
 
 ## Autenticação (Login)
 - Apenas o menu de Atendente exige login (usuário/senha).
@@ -178,12 +201,13 @@ No Windows com MSVC/MinGW, o executável pode estar em `build/Release/HelpDesk.e
 - Em caso de sucesso:
   - `usuario_logado` é definido em `core/login.c`.
   - A UI passa a exibir o nome do usuário logado no topo.
-  - O formulário é fechado e os campos são limpos.
+  - Abre o menu principal do cliente e os campos são limpos.
+ - Em caso de falha: o campo de senha é limpo.
 
 ## Extensão do Sistema
 
 - **Adicionar uma nova tela/menu**
-  - Crie uma `Interface* nova = criar_interface("Titulo", SELECAO|FORMULARIO);`.
+  - Crie uma `Interface* nova = criar_interface("Titulo", SELECAO|LOGIN);`.
   - Encadeie opções com `criar_opcao("Nome", opcaoAnteriorOuNULL, callback);`.
   - Atribua `nova->primeira_opcao = primeiraOpcao;`.
   - Exponha uma função para abrir: `void abrir_nova() { empilhar_interface(nova); }`.
@@ -198,3 +222,8 @@ No Windows com MSVC/MinGW, o executável pode estar em `build/Release/HelpDesk.e
 
 - **Persistência de dados**
   - Hoje, o login lê somente `usuarios.txt`. Novos dados podem ser armazenados em arquivos adicionais em `src/data/`.
+
+## Erros/Observações Conhecidas
+
+- **Teclas numéricas**: a interface imprime instrução para escolher por número, porém a implementação atual apenas executa a opção já selecionada quando uma tecla numérica é pressionada. Seleção por número ainda não está implementada.
+- **TipoMenu LISTA**: tipo definido e reconhecido por `widgets.c`, mas sem renderização específica no momento.

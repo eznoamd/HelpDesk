@@ -41,7 +41,7 @@ Interface *criar_interface(const char *titulo, TipoMenu tipo) {
     return nova;
 }
 
-Opcao *criar_opcao(const char *nome, Opcao *anterior, Funcao f) {
+Opcao *criar_opcao(const char *nome, Opcao *anterior, int adm, Funcao f) {
     Opcao *nova = malloc(sizeof(Opcao));
     if (!nova) {
         printf("Erro ao alocar memória para opção.\n");

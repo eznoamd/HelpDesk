@@ -8,7 +8,7 @@
 typedef void (*Funcao)();
 
 typedef enum {
-    FORMULARIO,
+    LOGIN,
     LISTA,
     SELECAO
 } TipoMenu;
@@ -17,6 +17,7 @@ typedef struct Opcao {
     int indice;
     char nome[64];
     struct Opcao *proxima_opcao;
+    int adm;
     Funcao f;
 } Opcao;
 
@@ -36,7 +37,7 @@ void desempilhar_interface();
 Interface *interface_atual();
 void voltar();
 Interface *criar_interface(const char *titulo, TipoMenu tipo);
-Opcao *criar_opcao(const char *nome, Opcao *anterior, Funcao f);
+Opcao *criar_opcao(const char *nome, Opcao *anterior, int adm, Funcao f);
 
 
 #endif //HELPDESK_INTERFACE_H
