@@ -1,5 +1,5 @@
-#ifndef HELPDESK_ATENDIMENTO_H
-#define HELPDESK_ATENDIMENTO_H
+#ifndef HELPDESK_CHAMADO_H
+#define HELPDESK_CHAMADO_H
 
 #include <time.h>
 #include <stddef.h>
@@ -20,8 +20,8 @@ typedef struct {
     int prioridade;
     char nome_pessoa[AT_NOME_MAX];
     struct tm data_hora;
-} Atendimento;
+} Chamado;
 
-Atendimento atendimento_create(const char *descricao, int prioridade, const char *nome_pessoa, struct tm data_hora);
+Chamado chamado_create(const char *descricao, int prioridade, const char *nome_pessoa, struct tm data_hora);
 
 #endif

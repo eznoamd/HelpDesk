@@ -48,8 +48,8 @@ HelpDesk/
 ├─ main.c
 └─ src/
    ├─ core/
-   │  ├─ atendimento.c
-   │  ├─ atendimento.h
+   │  ├─ Chamado.c
+   │  ├─ Chamado.h
    │  ├─ fila_normal.c
    │  ├─ fila_normal.h
    │  ├─ fila_preferencial.c
@@ -95,7 +95,7 @@ HelpDesk/
 - **`src/view/menu.*`**
   - Constrói as telas e encadeia suas opções.
     - `inicio`: seleção entre Cliente/Atendente/Sair.
-    - `menu_cliente`: opções atuais — "Iniciar Atendimento", "Atender pedidos" (requer adm=1), "Ver meus atendimentos", "Sair".
+    - `menu_cliente`: opções atuais — "Iniciar Chamado", "Atender pedidos" (requer adm=1), "Ver meus Chamados", "Sair".
     - `form_login`: formulário com campos `Usuario` e `Senha`.
   - Ações (callbacks) expostas/úteis: `abrir_menu_principal`, `abrir_login`, `voltar_inicio`, `sair_sistema`.
   - Exposta função `obter_inicio()` para o loop.
@@ -127,12 +127,12 @@ HelpDesk/
   - Valida credenciais e define `usuario_logado` global.
   - `get_logged()` indica se há usuário autenticado.
   
-- **`src/core/atendimento.*`**
-  - Define o tipo `Atendimento` (descrição, prioridade 1-4, nome da pessoa, `struct tm data_hora`).
-  - Função `atendimento_create()` para construir instâncias válidas.
+- **`src/core/Chamado.*`**
+  - Define o tipo `Chamado` (descrição, prioridade 1-4, nome da pessoa, `struct tm data_hora`).
+  - Função `Chamado_create()` para construir instâncias válidas.
 
 - **`src/core/fila_preferencial.*`**
-  - Implementa `FilaPrioridadeMaxima` (heap máximo) de `Atendimento` por prioridade e data/hora.
+  - Implementa `FilaPrioridadeMaxima` (heap máximo) de `Chamado` por prioridade e data/hora.
   - Operações: `criar_fila_prioridade_maxima`, `inserir`, `extrair_maximo`, `liberar_fila`.
 
 - **`src/core/fila_normal.*`**

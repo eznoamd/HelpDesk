@@ -24,6 +24,15 @@ add_executable(HelpDesk main.c
         src/core/fila_normal.h
         src/core/fila_preferencial.c
         src/core/fila_preferencial.h
-        src/core/atendimento.c
-        src/core/atendimento.h
+        src/core/chamado.c
+        src/core/chamado.h
+        src/core/bst_estoque.c
+        src/core/bst_estoque.h
+        src/core/bst_tecnico.c
+        src/core/bst_tecnico.h
+        src/view/color.h
+        src/models/fifo.c
+        src/models/fifo.h
+        src/models/heap.c
+        src/models/heap.h
 )

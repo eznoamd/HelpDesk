@@ -1,8 +1,8 @@
-#include "atendimento.h"
+#include "chamado.h"
 #include <string.h>
 
-Atendimento atendimento_create(const char *descricao, int prioridade, const char *nome_pessoa, struct tm data_hora) {
-    Atendimento a;
+Chamado chamado_create(const char *descricao, int prioridade, const char *nome_pessoa, struct tm data_hora_inicio) {
+    Chamado a;
     if (descricao) {
         strncpy(a.descricao, descricao, AT_DESCRICAO_MAX - 1);
         a.descricao[AT_DESCRICAO_MAX - 1] = '\0';
@@ -18,6 +18,6 @@ Atendimento atendimento_create(const char *descricao, int prioridade, const char
     } else {
         a.nome_pessoa[0] = '\0';
     }
-    a.data_hora = data_hora;
+    a.data_hora = data_hora_inicio;
     return a;
 }

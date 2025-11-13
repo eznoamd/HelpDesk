@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <string.h>
+#include "color.h"
 #include "menu.h"
 #include "interface.h"
 #include "../core/login.h"
@@ -19,22 +20,22 @@ void menu_box(Interface *interface) {
 
     print_usuario_com_data(usuario);
     print_cabecalho("HELP DESK", 0, 0);
-    printf("\033[38;5;226m |.------------------------------------------------------------------------------.| \033[0m\n");
-    printf("\033[38;5;226m ||                                                                              || \033[0m\n");
-    printf("\033[38;5;220m ||  .::   .: .,::::::   :::  ::::::::::.:::::::-.  .,:::::: .::::::.  :::  ..   || \033[0m\n");
-    printf("\033[38;5;214m ||  ;;;   ;;,;;;;''''   ;;;   `;;;```.;;;;;,   `';,;;;;'''';;;`    `  ;;; .;;,. || \033[0m\n");
-    printf("\033[38;5;208m || ,[[[,,,[[[ [[cccc    [[[    `]]nnn]]' `[[     [[ [[cccc '[==/[[[[, [[[[[/'   || \033[0m\n");
-    printf("\033[38;5;202m || \"$$$\"\"\"$$$ $$\"\"\"    $$'     $$$\"\"     $$,    $$ $$\"\"\"\"   '''    $_$$$$,      || \033[0m\n");
-    printf("\033[38;5;196m ||  888   \"88o888oo,__ o88oo,.__888o      888_,o8P' 888oo,__88b    dP\"888\"88o,  || \033[0m\n");
-    printf("\033[38;5;160m ||  MMM    YMM\"\"\"\"YUMMM\"\"\"\"YUMMMYMMMb     MMMMP\"`   \"\"\"\"YUMMM\"YMmMY\"  MMM \"MMP\" || \033[0m\n");
-    printf("\033[38;5;124m ||                                                                              || \033[0m\n");
-    printf("\033[38;5;124m |'------------------------------------------------------------------------------'| \033[0m\n");
-    printf("\033[38;5;124m | -> Aperte o numero desejado para selecionar a opcao                            | \033[0m\n");
-    printf("\033[38;5;124m | -> Use as setas cima e baixo para escolher opcao                               | \033[0m\n");
-    printf("\033[38;5;124m | -> Use a seta direita para selecinar                                           | \033[0m\n");
-    printf("\033[38;5;124m | -> Aperte 'q' para sair                                                        | \033[0m\n");
+    printf(YEL1 " |.------------------------------------------------------------------------------.| " RESET);
+    printf(YEL1 " ||                                                                              || " RESET);
+    printf(DEG1 " ||  .::   .: .,::::::   :::  ::::::::::.:::::::-.  .,:::::: .::::::.  :::  ..   || " RESET);
+    printf(DEG2 " ||  ;;;   ;;,;;;;''''   ;;;   `;;;```.;;;;;,   `';,;;;;'''';;;`    `  ;;; .;;,. || " RESET);
+    printf(DEG3 " || ,[[[,,,[[[ [[cccc    [[[    `]]nnn]]' `[[     [[ [[cccc '[==/[[[[, [[[[[/'   || " RESET);
+    printf(DEG4 " || \"$$$\"\"\"$$$ $$\"\"\"    $$'     $$$\"\"     $$,    $$ $$\"\"\"\"   '''    $_$$$$,      || " RESET);
+    printf(DEG5 " ||  888   \"88o888oo,__ o88oo,.__888o      888_,o8P' 888oo,__88b    dP\"888\"88o,  || " RESET);
+    printf(DEG6 " ||  MMM    YMM\"\"\"\"YUMMM\"\"\"\"YUMMMYMMMb     MMMMP\"`   \"\"\"\"YUMMM\"YMmMY\"  MMM \"MMP\" || " RESET);
+    printf(RED1" ||                                                                              || " RESET);
+    printf(RED1 " |'------------------------------------------------------------------------------'| " RESET);
+    printf(RED1 " | -> Aperte o numero desejado para selecionar a opcao                            | " RESET);
+    printf(RED1 " | -> Use as setas cima e baixo para escolher opcao                               | " RESET);
+    printf(RED1 " | -> Use a seta direita para selecinar                                           | " RESET);
+    printf(RED1 " | -> Aperte 'q' para sair                                                        | " RESET);
     print_cabecalho(interface->titulo, 1, 1);
-    printf("\033[38;5;124m ||                                                                              || \033[0m\n");
+    printf(RED1 " ||                                                                              || " RESET);
 
 
     switch(interface->tipo) {
@@ -49,8 +50,8 @@ void menu_box(Interface *interface) {
             break;
     }
 
-    printf("\033[38;5;124m |'------------------------------------------------------------------------------'| \033[0m\n");
-    printf("\033[38;5;124m '--------------------------------------------------------------------------------' \033[0m\n");
+    printf(RED1 " |'------------------------------------------------------------------------------'| " RESET);
+    printf(RED1 " '--------------------------------------------------------------------------------' " RESET);
 
     printf("\033[0m");
 }
@@ -78,11 +79,11 @@ static void print_login_linha(const char *label, const char *valor, int selecion
     int espacos = largura_total - 6 - len_linha;
     if (espacos < 0) espacos = 0;
 
-    printf("\033[38;5;124m || \033[0m");
+    printf(RED1 " || \033[0m");
     printf("\033[38;5;%dm%s ", color_label, label);
     printf("\033[38;5;%dm%s\033[0m", color_value, buffer);
     for (int i = 0; i < espacos; i++) putchar(' ');
-    printf("\033[38;5;124m ||\033[0m\n");
+    printf(RED1 " ||" RESET);
 }
 
 const char* print_usuario_com_data(const char *usuario) {
@@ -101,7 +102,7 @@ const char* print_usuario_com_data(const char *usuario) {
     if (espacos < 1) espacos = 1;
 
     snprintf(linha, sizeof(linha), "%s%*s%s", usuario, espacos, "", dateonly);
-    printf("\033[38;5;226m %s \033[0m\n", linha);
+    printf("\033[38;5;226m %s " RESET, linha);
 }
 
 void print_cabecalho(const char *title, int layer, int red) {
@@ -119,9 +120,10 @@ void print_cabecalho(const char *title, int layer, int red) {
     int tracos_esquerda = total_tracos / 2;
     int tracos_direita = total_tracos - tracos_esquerda;
 
-    int color = red ? 124 : 226;
+    char color[30];
+    strcpy(color, (red ? RED1 : YEL1));
 
-    printf("\033[38;5;%dm %s%.*s%s%.*s%s \033[0m\n",
+    printf("%s %s%.*s%s%.*s%s " RESET,
            color,
            inicio,
            tracos_esquerda, "----------------------------------------------------------------------------",
@@ -138,14 +140,14 @@ void print_opcao(int num, const char *texto, int selecionada) {
     int pontos = largura_total - 6 - 3 - len_num - len_texto;
     if (pontos < 0) pontos = 0;
 
-    printf("\033[38;5;124m || \033[0m");
+    printf(RED1 " || \033[0m");
 
     int color = selecionada ? 214 : 124;
     printf("\033[38;5;%dm[%d] %s", color, num, texto);
 
     for (int i = 0; i < pontos; i++) putchar(' ');
 
-    printf("\033[38;5;124m ||\033[0m\n");
+    printf(RED1 " ||" RESET);
 }
 
 void print_opcoes(Interface * interface, int selecionada) {
