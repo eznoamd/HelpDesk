@@ -63,3 +63,22 @@ int login(const char *usuario, const char *senha) {
 }
 
 int get_logged() { return usuario_logado[0] != '\0' ? 1 : 0; }
+
+int registrar_usuario(const char *usuario, const char *senha) {
+    if (!usuario || !senha || !*usuario || !*senha) return 0;
+    int num_usuarios = 0;
+    Usuario *lista = carregar_usuarios(&num_usuarios);
+    // se arquivo não existir, carregar_usuarios retorna NULL e num_usuarios=0 (tratado abaixo)
+    for (int i = 0; i < num_usuarios; ++i) {
+        if (strcmp(usuario, lista[i].usuario) == 0) {
+            free(lista);
+            return 0; // já existe
+        }
+    }
+    if (lista) free(lista);
+    FILE *fp = fopen(FILE_PATH, "a");
+    if (!fp) return 0;
+    int wrote = fprintf(fp, "%s %s\n", usuario, senha);
+    fclose(fp);
+    return wrote > 0 ? 1 : 0;
+}

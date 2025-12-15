@@ -18,26 +18,27 @@ O programa é organizado em camadas:
 
 - **view/**: gerenciamento de interfaces, menus e renderização (UI de console).
 - **controls/**: leitura e interpretação do teclado, navegação e disparo de ações.
-- **core/**: regras de negócio básicas (ex.: login de atendentes).
+- **core/**: regras de negócio e orquestração do domínio (login, chamados, filas, histórico, estoque, técnicos, etc.).
+- **models/**: estruturas de dados genéricas reutilizáveis (fila FIFO, heap de prioridade, etc.).
 - **data/**: dados externos, como o arquivo de usuários.
 
 Fluxo principal:
 
 ```mermaid
 flowchart TD
-    A["main.c: menu()"] --> B["construir_interfaces()"]
-    B --> C["empilhar_interface(inicio)"]
-    C --> D{"Loop"}
-    D --> E["system('cls')"]
-    E --> F["interface_atual()"]
-    F --> G["menu_box(interface)"]
-    G --> H["handle_controls()"]
-    H --> D
+    A["main.c: main()"] --> B["Inicialização: gestor_inicializar() / manager_tecnicos_inicializar() / manager_estoque_inicializar() / demo_populate()"]
+    B --> C["view/looping.c: menu()"]
+    C --> D["view/menu.c: abrir_menu_principal() (cria primeira Interface)"]
+    D --> E{"Loop infinito"}
+    E --> F["interface_atual() em view/interface.c"]
+    F --> G["render_interface() (limpa tela, header, opções)"]
+    G --> H["handle_controls() em controls/controls_holder.c"]
+    H --> E
 ```
 
 - O loop de `menu()` (em `src/view/looping.c`) redesenha a tela e processa entradas continuamente.
 - A pilha de interfaces permite navegar para frente/voltar entre telas (`src/view/interface.*`).
-- A renderização usa funções de widgets (`src/view/widgets.c`).
+- A renderização é feita por `render_interface()` em `src/view/interface.c`.
 - As teclas são lidas/interpretadas em `src/controls/teclas.c` e processadas em `src/controls/controls_holder.c`.
 
 ## Estrutura de Diretórios
@@ -48,32 +49,31 @@ HelpDesk/
 ├─ main.c
 └─ src/
    ├─ core/
-   │  ├─ Chamado.c
-   │  ├─ Chamado.h
-   │  ├─ fila_normal.c
-   │  ├─ fila_normal.h
-   │  ├─ fila_preferencial.c
-   │  ├─ fila_preferencial.h
-   │  ├─ login.c
-   │  └─ login.h
+   │  ├─ chamado.c / chamado.h
+   │  ├─ fila_normal.c / fila_normal.h
+   │  ├─ fila_preferencial.c / fila_preferencial.h
+   │  ├─ lista_chamados.c / lista_chamados.h
+   │  ├─ gestor_chamados.c / gestor_chamados.h
+   │  ├─ manager_estoque.c / manager_estoque.h
+   │  ├─ manager_tecnicos.c / manager_tecnicos.h
+   │  ├─ bst_estoque.c / bst_estoque.h
+   │  ├─ bst_tecnico.c / bst_tecnico.h
+   │  ├─ login.c / login.h
+   │  └─ demo.c / demo.h
+   ├─ models/
+   │  ├─ fifo.c / fifo.h
+   │  └─ heap.c / heap.h
    ├─ controls/
-   │  ├─ controls_holder.c
-   │  ├─ controls_holder.h
-   │  ├─ teclas.c
-   │  └─ teclas.h
+   │  ├─ controls_holder.c / controls_holder.h
+   │  ├─ teclas.c / teclas.h
    ├─ data/
    │  └─ usuarios.txt
    └─ view/
-      ├─ acoes.c
-      ├─ acoes.h
-      ├─ interface.c
-      ├─ interface.h
-      ├─ looping.c
-      ├─ looping.h
-      ├─ menu.c
-      ├─ menu.h
-      ├─ widgets.c
-      └─ widgets.h
+      ├─ interface.c / interface.h
+      ├─ looping.c / looping.h
+      ├─ menu.c / menu.h
+      ├─ widgets.c / widgets.h
+      └─ color.h
 ```
 
 ## Módulos e Comunicação
@@ -87,56 +87,51 @@ HelpDesk/
   - Constrói interfaces via `construir_interfaces()` e empilha a tela inicial `obter_inicio()`.
   - Loop: limpa a tela, obtém `interface_atual()`, chama `menu_box()` para renderizar e `handle_controls()` para processar entrada.
 
-- **`src/view/interface.*`**
-  - Estruturas: `Interface`, `Opcao`, `TipoMenu` (`LOGIN`, `SELECAO`, `LISTA`).
-  - Gerencia a pilha de interfaces (`empilhar_interface`, `desempilhar_interface`, `interface_atual`, `voltar`).
-  - Criação de UI em tempo de execução (`criar_interface`, `criar_opcao`).
-
-- **`src/view/menu.*`**
-  - Constrói as telas e encadeia suas opções.
-    - `inicio`: seleção entre Cliente/Atendente/Sair.
-    - `menu_cliente`: opções atuais — "Iniciar Chamado", "Atender pedidos" (requer adm=1), "Ver meus Chamados", "Sair".
-    - `form_login`: formulário com campos `Usuario` e `Senha`.
-  - Ações (callbacks) expostas/úteis: `abrir_menu_principal`, `abrir_login`, `voltar_inicio`, `sair_sistema`.
-  - Exposta função `obter_inicio()` para o loop.
-
-- **`src/view/widgets.*`**
-  - Renderiza a UI (ASCII/cores) e as opções, incluindo cabeçalhos e caixas.
-  - `menu_box(Interface*)` decide como desenhar a interface conforme `TipoMenu`.
-    - `LOGIN`: duas linhas para `Usuario` e `Senha` (senha mascarada com `*`).
-    - `SELECAO`: lista de opções com destaque na selecionada.
-    - `LISTA`: reservado para futuras listas; sem renderização específica no momento.
-  - Exibe usuário logado e data via `print_usuario_com_data()`.
-
-- **`src/controls/teclas.*`**
-  - Lê o teclado de forma cross-platform (Windows via `<conio.h>`, Unix via termios).
-  - Converte scancodes em enum `Tecla` (`SETA_CIMA`, `SETA_BAIXO`, `SETA_ESQ`, `SETA_DIR`, `TECLA_ESC`, `TECLA_SAIR`, `TECLA_NORMAL`).
-  - Preenche `ultima_tecla` para entrada de caracteres.
-
-- **`src/controls/controls_holder.*`**
-  - Função central `handle_controls()` executa a ação conforme a tecla interpretada:
-    - Navegação entre opções (`opcao_selecionada`).
-    - Voltar/Sair: `SETA_ESQ` chama `voltar()`; `ESC`/`'q'` sai, exceto em `LOGIN`, onde volta e limpa os campos.
-    - No formulário de login: digitação em `user`/`pass`, backspace, e confirmação com `SETA_DIR`.
-    - Ao confirmar (`SETA_DIR`) em `LOGIN`: se `login(user, pass)` for bem-sucedido, abre o menu principal do cliente (`abrir_menu_principal()`), limpa `user`/`pass` e reseta seleção; em falha, limpa apenas `pass`.
-    - Em menus de seleção (`SELECAO`), ao confirmar, busca a `Opcao` selecionada e chama o callback `f()`.
-    - Teclas numéricas (`0-9`): atualmente disparam a ação da opção selecionada (não selecionam por número).
-
-- **`src/core/login.*`**
-  - Lê `../src/data/usuarios.txt` com pares `usuario senha`.
-  - Valida credenciais e define `usuario_logado` global.
-  - `get_logged()` indica se há usuário autenticado.
-  
 - **`src/core/Chamado.*`**
   - Define o tipo `Chamado` (descrição, prioridade 1-4, nome da pessoa, `struct tm data_hora`).
   - Função `Chamado_create()` para construir instâncias válidas.
 
 - **`src/core/fila_preferencial.*`**
-  - Implementa `FilaPrioridadeMaxima` (heap máximo) de `Chamado` por prioridade e data/hora.
-  - Operações: `criar_fila_prioridade_maxima`, `inserir`, `extrair_maximo`, `liberar_fila`.
+  - Implementa `FilaPrioridadeMaxima` usando um heap de prioridade (baseado em `src/models/heap.*`).
+  - Prioriza chamados com maior prioridade e, em caso de empate, data/hora mais antiga.
+  - Operações: `criar_fila_prioridade_maxima`, `inserir`, `extrair_maximo`, `liberar_fila`, `fila_prioridade_iterar`.
 
 - **`src/core/fila_normal.*`**
-  - Arquivos presentes (estrutura reservada para fila FIFO). Implementação ainda vazia.
+  - Fila FIFO de `Chamado` baseada em `src/models/fifo.*`.
+  - Operações: `criar_fila_normal`, `enfileirar`, `desenfileirar`, `frente`, `fila_vazia`, `liberar_fila_normal`, `fila_normal_iterar`.
+
+- **`src/models/fifo.*`**
+  - Implementa uma fila genérica (FIFO) de ponteiros, redimensionável, usada pela fila normal de chamados.
+
+- **`src/models/heap.*`**
+  - Implementa um heap genérico (min-heap) parametrizado por função de comparação, usado pela fila de prioridade.
+
+- **`src/core/lista_chamados.*`**
+  - Lista encadeada de `Chamado` usada para listas de suspensos e histórico.
+
+- **`src/core/gestor_chamados.*`**
+  - Faz a orquestração de filas (normal e prioridade), lista de suspensos e histórico.
+  - Centraliza regras como inserção de chamados, suspensão, reintegração, cancelamento e histórico.
+
+- **`src/core/manager_estoque.*` / `src/core/bst_estoque.*`**
+  - Mantêm uma árvore binária de busca de `Produto` (nome, quantidade, filhos esquerda/direita).
+  - Operações principais:
+    - `manager_estoque_inicializar()`: prepara a estrutura interna de estoque.
+    - `manager_estoque_inserir(nome, quantidade)`: insere/atualiza um produto na BST de estoque.
+    - `manager_estoque_debitar(nome, quantidade)`: tenta consumir itens do estoque (retorna sucesso/fracasso conforme disponibilidade).
+    - `manager_estoque_quantidade(nome)`: consulta quantidade atual disponível de um produto.
+  - A BST de estoque expõe funções de baixo nível (`criarProduto`, `inserirProduto`, `buscarProduto`, `removerProduto`, `liberarArvore`).
+  - Integrado ao `gestor_chamados` para decidir, por exemplo, se um chamado suspenso pode voltar para a fila após entrada de materiais.
+
+- **`src/core/manager_tecnicos.*` / `src/core/bst_tecnico.*`**
+  - Mantêm uma árvore binária de busca de `Tecnico` (nome, CPF, filhos esquerda/direita) com uma lista de chamados ativos por técnico.
+  - Operações principais:
+    - `manager_tecnicos_inicializar()`: prepara a estrutura global de técnicos.
+    - `manager_tecnicos_inserir(nome, cpf)`: registra um novo técnico na BST.
+    - `manager_tecnicos_buscar(nome)`: localiza um técnico existente para associar/cancelar chamados.
+  - A BST de técnicos oferece operações de baixo nível (`criarTecnico`, `inserirTecnico`, `buscarTecnico`, `removerTecnico`, `liberarArvoreTecnico`).
+  - Cada técnico possui uma `ListaChamados *chamados_ativos`, manipulada por funções como `tecnico_adicionar_chamado`, `tecnico_remover_chamado_por_id` e `tecnico_remover_e_obter_chamado_por_id`.
+  - Essas funções são usadas por `gestor_chamados` para cancelar/gerenciar chamados que já estão em atendimento com um técnico específico.
 
 - **`src/data/usuarios.txt`**
   - Formato simples por linha: `Usuario Senha` (separados por espaço). Exemplo:
@@ -148,15 +143,23 @@ HelpDesk/
 ### Diagrama de Relações (alto nível)
 ```mermaid
 graph LR
-  main[main.c] --> L[view/looping.c menu]
-  L --> M[view/menu.c construir_interfaces]
-  L --> I[view/interface.c pilha de telas]
-  L --> W[view/widgets.c render]
-  L --> CH[controls/controls_holder.c handle_controls]
-  CH --> T[controls/teclas.c interpretar_tecla]
-  CH --> I
-  CH --> M
-  CH --> LG[core/login.c login]
+  main[main.c] --> L[view/looping.c: menu]
+  L --> MP[view/menu.c: abrir_menu_principal]
+  MP --> IF[view/interface.c: criar_interface/adicionar_opcao]
+  L --> R[view/interface.c: render_interface]
+  L --> CH[controls/controls_holder.c: handle_controls]
+  CH --> T[controls/teclas.c: interpretar_tecla]
+  CH --> IF
+  CH --> M[view/menu.c: callbacks de ações]
+  M --> G[core/gestor_chamados.c]
+  G --> FN[core/fila_normal.c]
+  G --> FP[core/fila_preferencial.c]
+  G --> LS[core/lista_chamados.c]
+  M --> ME[core/manager_estoque.c]
+  ME --> BE[core/bst_estoque.c]
+  M --> MT[core/manager_tecnicos.c]
+  MT --> BT[core/bst_tecnico.c]
+  M --> LG[core/login.c]
   LG --> D[data/usuarios.txt]
 ```
 

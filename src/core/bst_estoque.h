@@ -8,10 +8,10 @@ typedef struct Produto {
     struct Produto *direita;
 } Produto;
 
-Produto* criarProduto(char *nome, int quantidade);
-Produto* inserirProduto(Produto* raiz, char *nome, int quantidade);
-Produto* buscarProduto(Produto* raiz, char *nome);
-Produto* removerProduto(Produto* raiz, char *nome);
+Produto* criarProduto(const char *nome, int quantidade);
+Produto* inserirProduto(Produto* raiz, const char *nome, int quantidade);
+Produto* buscarProduto(Produto* raiz, const char *nome);
+Produto* removerProduto(Produto* raiz, const char *nome);
 void liberarArvore(Produto* raiz);
 
-#endif //HELPDESK_BST_ESTOQUE_H
+#endif

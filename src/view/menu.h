@@ -1,13 +1,11 @@
-#ifndef HELPDESK_MENU_H
-#define HELPDESK_MENU_H
+#ifndef HELPDESK_VIEW_MENU_H
+#define HELPDESK_VIEW_MENU_H
 
-typedef struct Interface Interface;
-
-void construir_interfaces();
 void abrir_menu_principal();
-void abrir_login();
-void sair_sistema();
+void abrir_menu_usuario();
+void abrir_menu_tecnico();
+void abrir_menu_estoque();
+void mostrar_mensagem(const char *titulo, const char *mensagem);
+void atualizar_prioridade_from_str(const char *s);
 
-Interface *obter_inicio();
-
-#endif //HELPDESK_MENU_H
+#endif //HELPDESK_VIEW_MENU_H

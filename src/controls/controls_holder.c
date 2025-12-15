@@ -6,19 +6,17 @@
 #include "../view/interface.h"
 #include "../view/menu.h"
 #include "../view/looping.h"
+#include "../core/chamado.h"
 
 void handle_controls() {
     enum Tecla tecla = interpretar_tecla();
 
     switch (tecla) {
         case TECLA_ESC:
-        case TECLA_SAIR:
-        {
+        case TECLA_SAIR: {
             Interface *iface = interface_atual();
-            if (iface && iface->tipo == LOGIN) {
+            if (iface) {
                 voltar();
-                user[0] = '\0';
-                pass[0] = '\0';
                 opcao_selecionada = 1;
             } else {
                 exit(0);
@@ -32,7 +30,7 @@ void handle_controls() {
             if (!iface) break;
             int max_indice = 0;
             for (Opcao *o = iface->primeira_opcao; o; o = o->proxima_opcao) max_indice = o->indice;
-            if (max_indice == 0) break;
+            if (max_indice <= 0) break;
             opcao_selecionada--;
             if (opcao_selecionada < 1) opcao_selecionada = max_indice;
             break;
@@ -44,7 +42,7 @@ void handle_controls() {
             if (!iface) break;
             int max_indice = 0;
             for (Opcao *o = iface->primeira_opcao; o; o = o->proxima_opcao) max_indice = o->indice;
-            if (max_indice == 0) break;
+            if (max_indice <= 0) break;
             opcao_selecionada++;
             if (opcao_selecionada > max_indice) opcao_selecionada = 1;
             break;
@@ -53,7 +51,9 @@ void handle_controls() {
         case SETA_ESQ:
         {
             Interface *iface = interface_atual();
+            (void)iface;
             voltar();
+            opcao_selecionada = 1;
             break;
         }
 
@@ -61,62 +61,26 @@ void handle_controls() {
         {
             Interface *iface = interface_atual();
             if (!iface) break;
-            if (iface->tipo == LOGIN) {
-                if (login(user, pass)) {
-                    abrir_menu_principal();
+            for (Opcao *o = iface->primeira_opcao; o; o = o->proxima_opcao) {
+                if (o->indice == opcao_selecionada) {
+                    if (o->f) o->f();
                     opcao_selecionada = 1;
-                    user[0] = '\0';
-                    pass[0] = '\0';
-                } else {
-                    pass[0] = '\0';
-                }
-            } else {
-                for (Opcao *o = iface->primeira_opcao; o; o = o->proxima_opcao) {
-                    if (o->indice == opcao_selecionada) {
-                        if (o->f) o->f();
-                        opcao_selecionada = 1;
-                        break;
-                    }
+                    break;
                 }
             }
             break;
         }
 
         default:
-            {
-                Interface *iface = interface_atual();
-                if (iface && iface->tipo == LOGIN) {
-                    char c = ultima_tecla;
-                    if (c == 8 || c == 127) {
-                        if (opcao_selecionada == 1) {
-                            size_t n = strlen(user);
-                            if (n > 0) user[n-1] = '\0';
-                        } else if (opcao_selecionada == 2) {
-                            size_t n = strlen(pass);
-                            if (n > 0) pass[n-1] = '\0';
-                        }
-                    } else if (c >= 32 && c <= 126) {
-                        if (opcao_selecionada == 1) {
-                            size_t n = strlen(user);
-                            if (n < TAM_LOGIN_STRINGS - 1) { user[n] = c; user[n+1] = '\0'; }
-                        } else if (opcao_selecionada == 2) {
-                            size_t n = strlen(pass);
-                            if (n < TAM_LOGIN_STRINGS - 1) { pass[n] = c; pass[n+1] = '\0'; }
-                        }
-                    }
-                }else {
-                    char c = ultima_tecla;
-                    if (c >= 48 && c <= 57) {
-                        for (Opcao *o = iface->primeira_opcao; o; o = o->proxima_opcao) {
-                            if (o->indice == opcao_selecionada) {
-                                if (o->f) o->f();
-                                opcao_selecionada = 1;
-                                break;
-                            }
-                        }
-                    }
-                }
+        {
+            Interface *iface = interface_atual();
+            if (iface && iface->tipo == MENSAGEM) {
+                // qualquer tecla fecha mensagem
+                voltar();
+                opcao_selecionada = 1;
             }
+            // demais teclas ignoradas; entradas de texto não são mais suportadas aqui
+        }
             break;
     }
 }

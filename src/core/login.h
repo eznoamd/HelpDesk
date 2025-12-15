@@ -8,5 +8,6 @@ extern char usuario_logado[TAM_LOGIN_STRINGS];
 
 int login(const char *usuario, const char *senha);
 int get_logged();
+int registrar_usuario(const char *usuario, const char *senha);
 
 #endif //HELPDESK_LOGIN_H

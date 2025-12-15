@@ -1,7 +1,6 @@
-#ifndef HELPDESK_LOOPING_H
-#define HELPDESK_LOOPING_H
+#ifndef HELPDESK_VIEW_LOOPING_H
+#define HELPDESK_VIEW_LOOPING_H
 
-extern int opcao_selecionada;
 void menu();
 
-#endif //HELPDESK_LOOPING_H
+#endif //HELPDESK_VIEW_LOOPING_H

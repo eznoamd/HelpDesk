@@ -59,3 +59,23 @@ void liberar_fila_normal(FilaNormal *fila) {
     }
     free(fila);
 }
+
+void fila_normal_iterar(FilaNormal *fila, void (*cb)(const Chamado*, void*), void *ctx) {
+    if (!fila || !fila->q || !cb) return;
+    size_t n = fifo_size(fila->q);
+    if (n == 0) return;
+    Chamado *temp = (Chamado*)malloc(sizeof(Chamado) * n);
+    if (!temp) return;
+    size_t i = 0;
+    while (!fifo_is_empty(fila->q)) {
+        Chamado *ptr = (Chamado*)fifo_dequeue(fila->q);
+        if (!ptr) break;
+        temp[i++] = *ptr;
+        free(ptr);
+    }
+    for (size_t j = 0; j < i; ++j) {
+        cb(&temp[j], ctx);
+        enfileirar(fila, temp[j]);
+    }
+    free(temp);
+}

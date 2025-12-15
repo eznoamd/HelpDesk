@@ -1,43 +1,37 @@
-#ifndef HELPDESK_INTERFACE_H
-#define HELPDESK_INTERFACE_H
+#ifndef HELPDESK_VIEW_INTERFACE_H
+#define HELPDESK_VIEW_INTERFACE_H
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-typedef void (*Funcao)();
+#include <stddef.h>
 
 typedef enum {
-    LOGIN,
-    LISTA,
-    SELECAO
-} TipoMenu;
+    MENU = 0,
+    MENSAGEM = 1
+} InterfaceTipo;
 
 typedef struct Opcao {
     int indice;
-    char nome[64];
+    char *nome;
+    void (*f)(void);
     struct Opcao *proxima_opcao;
-    int adm;
-    Funcao f;
+    char *valor;
+    int valor_tamanho;
 } Opcao;
 
 typedef struct Interface {
-    char titulo[64];
-    TipoMenu tipo;
-    struct Opcao *primeira_opcao;
+    InterfaceTipo tipo;
+    char titulo[128];
+    Opcao *primeira_opcao;
+    struct Interface *anterior;
 } Interface;
 
-typedef struct PilhaInterface {
-    Interface *interface;
-    struct PilhaInterface *proxima;
-} PilhaInterface;
-
-void empilhar_interface(Interface *interface);
-void desempilhar_interface();
 Interface *interface_atual();
+void abrir_interface(Interface *i);
 void voltar();
-Interface *criar_interface(const char *titulo, TipoMenu tipo);
-Opcao *criar_opcao(const char *nome, Opcao *anterior, int adm, Funcao f);
 
+// helpers para construir UI
+Interface *criar_interface(InterfaceTipo tipo, const char *titulo);
+void liberar_interface(Interface *i);
+Opcao *adicionar_opcao(Interface *i, int indice, const char *nome, void (*f)(void));
+void render_interface(const Interface *i, int opcao_selecionada, const char *user, const char *pass);
 
-#endif //HELPDESK_INTERFACE_H
+#endif //HELPDESK_VIEW_INTERFACE_H

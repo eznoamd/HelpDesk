@@ -3,23 +3,22 @@ project(HelpDesk C)
 
 set(CMAKE_C_STANDARD 11)
 
+include_directories(${CMAKE_SOURCE_DIR}/src)
+
+
 add_executable(HelpDesk main.c
         src/view/interface.c
         src/view/interface.h
         src/view/menu.c
         src/core/login.c
         src/core/login.h
-        src/view/widgets.c
         src/view/looping.c
         src/view/menu.h
-        src/view/widgets.h
         src/view/looping.h
         src/controls/teclas.c
         src/controls/teclas.h
         src/controls/controls_holder.h
         src/controls/controls_holder.c
-        src/view/acoes.c
-        src/view/acoes.h
         src/core/fila_normal.c
         src/core/fila_normal.h
         src/core/fila_preferencial.c
@@ -30,9 +29,14 @@ add_executable(HelpDesk main.c
         src/core/bst_estoque.h
         src/core/bst_tecnico.c
         src/core/bst_tecnico.h
-        src/view/color.h
         src/models/fifo.c
         src/models/fifo.h
         src/models/heap.c
         src/models/heap.h
+        src/core/lista_chamados.c
+        src/core/gestor_chamados.c
+        src/core/manager_tecnicos.c
+        src/core/demo.c
+        src/core/manager_estoque.c
+        src/view/color.h
 )

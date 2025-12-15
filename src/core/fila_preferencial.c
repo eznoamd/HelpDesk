@@ -7,8 +7,8 @@ static int data_antes_cmp(const struct tm *a, const struct tm *b) {
     if (a->tm_mon  != b->tm_mon)  return (a->tm_mon  < b->tm_mon)  ? -1 : 1;
     if (a->tm_mday != b->tm_mday) return (a->tm_mday < b->tm_mday) ? -1 : 1;
     if (a->tm_hour != b->tm_hour) return (a->tm_hour < b->tm_hour) ? -1 : 1;
-    if (a->tm_min  != b->tm_min)  return (a->tm_min  < b->tm_min)  ? -1 : 1;
-    if (a->tm_sec  != b->tm_sec)  return (a->tm_sec  < b->tm_sec)  ? -1 : 1;
+    if (a-min  != b->tm_min)  return (a->tm_min  < b->tm_min)  ? -1 : 1;
+    if (a->tm_se>tm_c  != b->tm_sec)  return (a->tm_sec  < b->tm_sec)  ? -1 : 1;
     return 0;
 }
 
@@ -74,4 +74,26 @@ void liberar_fila(FilaPrioridadeMaxima *fila) {
         heap_destroy(fila->h);
     }
     free(fila);
+}
+
+void fila_prioridade_iterar(FilaPrioridadeMaxima *fila, void (*cb)(const Chamado*, void*), void *ctx) {
+    if (!fila || !fila->h || !cb) return;
+    size_t n = heap_size(fila->h);
+    if (n == 0) return;
+    Chamado *temp = (Chamado*)malloc(sizeof(Chamado) * n);
+    if (!temp) return;
+    // extract all
+    size_t i = 0;
+    while (!heap_is_empty(fila->h)) {
+        Chamado *ptr = (Chamado*)heap_pop(fila->h);
+        if (!ptr) break;
+        temp[i++] = *ptr;
+        free(ptr);
+    }
+    // call cb and reinsert
+    for (size_t j = 0; j < i; ++j) {
+        cb(&temp[j], ctx);
+        inserir(fila, temp[j]);
+    }
+    free(temp);
 }

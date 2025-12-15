@@ -14,5 +14,7 @@ int desenfileirar(FilaNormal *fila, Chamado *out);
 int frente(FilaNormal *fila, Chamado *out);
 int fila_vazia(FilaNormal *fila);
 void liberar_fila_normal(FilaNormal *fila);
+// iterate over elements  without modifying queue order
+void fila_normal_iterar(FilaNormal *fila, void (*cb)(const Chamado*, void*), void *ctx);
 
 #endif //HELPDESK_FILA_NORMAL_H
